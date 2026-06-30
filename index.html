@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>SÓ A NATA — Racha de Futebol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --black:#070707;
+    --black-2:#121212;
+    --black-3:#1a1a1a;
+    --line:#272727;
+    --white:#f5f5f0;
+    --gray:#8c8c8c;
+    --gold:#d9b46a;
+    --green:#28c76f;
+    --amber:#e0b400;
+    --error:#e1454f;
+    --radius:20px;
+    --radius-sm:13px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--black);
+    color:var(--white);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    position:relative;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(217,180,106,0.09), transparent 45%),
+      radial-gradient(circle at 100% 30%, rgba(40,199,111,0.06), transparent 40%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .pitch-strip{
+    position:fixed; top:0; left:0; right:0; height:4px;
+    background:
+      repeating-linear-gradient(90deg, rgba(245,245,240,0.85) 0 12px, transparent 12px 24px),
+      var(--green);
+    z-index:10;
+  }
+
+  /* ===== HEADER ===== */
+  header.hero{
+    position:relative; z-index:1;
+    text-align:center;
+    padding:calc(36px + env(safe-area-inset-top, 0px)) 16px 22px;
+    overflow:hidden;
+  }
+  header.hero::before{
+    content:"";
+    position:absolute; top:46%; left:50%;
+    transform:translate(-50%,-50%);
+    width:min(300px, 78vw); height:min(300px, 78vw);
+    border:1px solid rgba(245,245,240,0.06);
+    border-radius:50%;
+    z-index:-1;
+  }
+  header.hero::after{
+    content:"";
+    position:absolute; top:46%; left:50%;
+    transform:translate(-50%,-50%);
+    width:1px; height:min(300px, 78vw);
+    background:rgba(245,245,240,0.06);
+    z-index:-1;
+  }
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line);
+    background:var(--black-2);
+    border-radius:999px;
+    padding:6px 16px;
+    font-size:0.7rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--gray);
+    margin-bottom:20px;
+  }
+  .badge span.dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;}
+  .logo-img{
+    display:block;
+    width:clamp(220px, 68vw, 380px);
+    height:auto;
+    margin:0 auto;
+    mix-blend-mode:screen;
+  }
+  .tagline{
+    color:var(--gold);
+    font-size:clamp(0.68rem, 3vw, 0.8rem);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    margin:16px 0 0;
+  }
+
+  /* ===== NAV TABS ===== */
+  .tabs{
+    position:relative; z-index:1;
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin:0 auto 28px;
+    max-width:340px;
+    padding:0 16px;
+  }
+  .tab-btn{
+    flex:1;
+    background:var(--black-2);
+    border:1px solid var(--line);
+    color:var(--gray);
+    padding:12px 14px;
+    border-radius:999px;
+    font-size:0.78rem;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .2s, color .2s, border-color .2s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tab-btn.active{
+    background:var(--gold);
+    color:#0a0a0a;
+    border-color:var(--gold);
+  }
+
+  main{
+    position:relative; z-index:1;
+    max-width:640px;
+    margin:0 auto;
+    padding:0 clamp(14px, 4vw, 18px) calc(50px + env(safe-area-inset-bottom, 0px));
+  }
+  section.view{display:none;}
+  section.view.active{display:block;}
+
+  .card{
+    background:linear-gradient(165deg, var(--black-3), var(--black-2));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:clamp(18px, 5vw, 26px);
+    margin-bottom:18px;
+    box-shadow:0 14px 36px rgba(0,0,0,0.5);
+  }
+
+  /* ===== EVENT INFO ===== */
+  .event-card{padding:0; overflow:hidden;}
+  .event-head{
+    padding:clamp(14px,4vw,18px) clamp(16px,5vw,26px);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+  }
+  .event-head h2{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    font-size:clamp(0.95rem, 4vw, 1.15rem);
+    letter-spacing:0.05em;
+    margin:0;
+    text-transform:uppercase;
+  }
+  .event-head h2 .accent{color:var(--gold);}
+  .ball-icon{font-size:1.15rem; flex-shrink:0;}
+  .event-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  .event-item{
+    padding:clamp(14px,4vw,20px) clamp(14px,5vw,26px);
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    min-width:0;
+  }
+  .event-item:nth-child(2n){border-right:none;}
+  .event-item:nth-last-child(-n+2){border-bottom:none;}
+  .event-item .lbl{
+    display:block;
+    font-size:0.64rem;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    color:var(--gray);
+    margin-bottom:5px;
+  }
+  .event-item .val{
+    display:block;
+    font-size:clamp(0.98rem, 4.2vw, 1.18rem);
+    font-weight:700;
+    font-family:'Anton', sans-serif;
+    letter-spacing:0.02em;
+    overflow-wrap:break-word;
+  }
+  .event-item.price .val{color:var(--gold);}
+
+  /* ===== FORM ===== */
+  .card h3.title{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    font-size:clamp(0.95rem, 4vw, 1.15rem);
+    margin:0 0 16px;
+    border-left:4px solid var(--gold);
+    padding-left:12px;
+  }
+  form#form-presenca{display:flex; gap:10px; flex-wrap:wrap;}
+  #input-nome{
+    flex:1 1 200px;
+    background:var(--black);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    color:var(--white);
+    font-size:1rem;
+    outline:none;
+    transition:border-color .2s;
+  }
+  #input-nome:focus{border-color:var(--gold);}
+  #btn-confirmar{
+    background:var(--gold);
+    color:#0a0a0a;
+    border:none;
+    border-radius:var(--radius-sm);
+    padding:14px 24px;
+    font-weight:700;
+    text-transform:uppercase;
+    font-size:0.82rem;
+    letter-spacing:0.05em;
+    cursor:pointer;
+    transition:transform .15s, background .2s, opacity .2s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #btn-confirmar:hover{background:#e7c989;}
+  #btn-confirmar:active{transform:scale(0.96);}
+  #btn-confirmar:disabled{opacity:0.5; cursor:not-allowed;}
+  .form-msg{margin:12px 0 0; font-size:0.88rem; min-height:1.1em;}
+  .form-msg.error{color:var(--error);}
+  .form-msg.success{color:var(--green);}
+
+  /* ===== STATS ===== */
+  .stats-bar{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .stat{
+    background:var(--black-2);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:clamp(12px,4vw,18px) 4px;
+    text-align:center;
+    min-width:0;
+  }
+  .stat .num{
+    display:block;
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    font-size:clamp(1.4rem, 6.5vw, 2rem);
+    line-height:1;
+  }
+  .stat .lbl{
+    display:block;
+    margin-top:4px;
+    font-size:clamp(0.56rem, 2.4vw, 0.64rem);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--gray);
+  }
+  .stat.confirmados .num{color:var(--white);}
+  .stat.pagos .num{color:var(--green);}
+  .stat.pendentes .num{color:var(--amber);}
+
+  /* ===== LIST ===== */
+  ul.list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px;}
+  .empty{text-align:center; color:var(--gray); padding:24px 0; list-style:none; font-size:0.88rem;}
+  .p-item{
+    background:var(--black);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:13px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .p-name{font-weight:600; overflow-wrap:break-word; min-width:0;}
+  .p-status{font-size:0.84rem; white-space:nowrap; flex-shrink:0;}
+
+  .p-item.admin{flex-direction:column; align-items:stretch;}
+  .admin-top{display:flex; justify-content:space-between; align-items:center; gap:10px;}
+  .admin-actions{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .admin-actions button{
+    flex:1 1 auto;
+    border:none; border-radius:9px;
+    padding:11px 10px;
+    font-size:0.74rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    cursor:pointer;
+    color:#fff;
+    transition:opacity .2s, transform .15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .admin-actions button:active{transform:scale(0.95);}
+  .btn-pago{background:var(--green);}
+  .btn-pendente{background:#8a6d10;}
+  .btn-excluir{background:var(--error);}
+  .btn-pago:hover, .btn-pendente:hover, .btn-excluir:hover{opacity:0.85;}
+
+  /* admin lock */
+  .lock-card{text-align:center;}
+  .lock-card input{
+    width:100%;
+    background:var(--black);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    color:var(--white);
+    font-size:1rem;
+    margin-bottom:12px;
+    outline:none;
+    text-align:center;
+  }
+  .lock-card input:focus{border-color:var(--gold);}
+  .lock-card button{
+    width:100%;
+    background:var(--gold);
+    color:#0a0a0a;
+    border:none;
+    border-radius:var(--radius-sm);
+    padding:14px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    cursor:pointer;
+  }
+
+  #btn-salvar-evento{
+    background:var(--gold);
+    color:#0a0a0a;
+    border:none;
+    border-radius:var(--radius-sm);
+    padding:14px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    cursor:pointer;
+    transition:opacity .2s, transform .15s;
+  }
+  #btn-salvar-evento:hover{opacity:0.9;}
+  #btn-salvar-evento:active{transform:scale(0.97);}
+  #form-evento input{
+    background:var(--black);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:14px 16px;
+    color:var(--white);
+    font-size:1rem;
+    outline:none;
+  }
+  #form-evento input:focus{border-color:var(--gold);}
+
+  footer{
+    text-align:center;
+    color:var(--gray);
+    font-size:0.78rem;
+    padding:0 16px calc(34px + env(safe-area-inset-bottom, 0px));
+    position:relative; z-index:1;
+  }
+
+  @media (max-width:480px){
+    #form-presenca{flex-direction:column;}
+    #btn-confirmar{width:100%;}
+    .event-item .lbl{font-size:0.6rem;}
+  }
+  @media (max-width:360px){
+    .stats-bar{gap:6px;}
+    .stat{padding:10px 3px;}
+    .admin-actions{gap:6px;}
+    .admin-actions button{padding:10px 6px; font-size:0.68rem;}
+  }
+</style>
+</head>
+<body>
+
+<div class="pitch-strip"></div>
+
+<header class="hero">
+  <div class="badge"><span class="dot"></span> RACHA CONFIRMADO</div>
+  <img class="logo-img" src="https://i.ibb.co/k2DRHSCp/Design-sem-nome.png" alt="Só a Nata" />
+  <p class="tagline">Só a Nata — Confirme sua presença</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" id="tab-publico">Participar</button>
+  <button class="tab-btn" id="tab-admin">Admin</button>
+</nav>
+
+<main>
+
+  <!-- ===================== VIEW PÚBLICA ===================== -->
+  <section class="view active" id="view-publico">
+
+    <div class="card event-card">
+      <div class="event-head">
+        <h2><span class="accent">//</span> PRÓXIMO RACHA</h2>
+        <span class="ball-icon">⚽</span>
+      </div>
+      <div class="event-grid">
+        <div class="event-item">
+          <span class="lbl">Data</span>
+          <span class="val" id="evt-data">--/--/----</span>
+        </div>
+        <div class="event-item">
+          <span class="lbl">Horário</span>
+          <span class="val" id="evt-hora">--:--</span>
+        </div>
+        <div class="event-item">
+          <span class="lbl">Local</span>
+          <span class="val" id="evt-local">A definir</span>
+        </div>
+        <div class="event-item price">
+          <span class="lbl">Valor</span>
+          <span class="val" id="evt-valor">R$ 0,00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 class="title">Confirmar Presença</h3>
+      <form id="form-presenca" autocomplete="off">
+        <input type="text" id="input-nome" placeholder="Digite seu nome" maxlength="40" required />
+        <button type="submit" id="btn-confirmar">Confirmar</button>
+      </form>
+      <p class="form-msg" id="form-msg"></p>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat confirmados"><span class="num" id="stat-confirmados">0</span><span class="lbl">Confirmados</span></div>
+      <div class="stat pagos"><span class="num" id="stat-pagos">0</span><span class="lbl">Pagos</span></div>
+      <div class="stat pendentes"><span class="num" id="stat-pendentes">0</span><span class="lbl">Pendentes</span></div>
+    </div>
+
+    <div class="card">
+      <h3 class="title">Participantes</h3>
+      <ul class="list" id="lista-participantes">
+        <li class="empty">Nenhum participante confirmado ainda.</li>
+      </ul>
+    </div>
+
+  </section>
+
+  <!-- ===================== VIEW ADMIN ===================== -->
+  <section class="view" id="view-admin">
+
+    <div class="card lock-card" id="admin-lock">
+      <h3 class="title" style="border:none; padding-left:0;">Acesso restrito</h3>
+      <input type="password" id="admin-senha" placeholder="Senha do administrador" />
+      <button id="btn-entrar-admin">Entrar</button>
+      <p class="form-msg error" id="admin-msg"></p>
+    </div>
+
+    <div id="admin-painel" style="display:none;">
+
+      <div class="card">
+        <h3 class="title">Editar Próximo Racha</h3>
+        <form id="form-evento" style="display:flex; flex-direction:column; gap:12px;">
+          <input type="text" id="adm-evt-data" placeholder="Data (ex: 12/07/2026)" required />
+          <input type="text" id="adm-evt-hora" placeholder="Horário (ex: 19:00)" required />
+          <input type="text" id="adm-evt-local" placeholder="Local" required />
+          <input type="text" id="adm-evt-valor" placeholder="Valor (ex: R$ 20,00)" required />
+          <button type="submit" id="btn-salvar-evento">Salvar Encontro</button>
+        </form>
+        <p class="form-msg" id="evento-msg"></p>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat confirmados"><span class="num" id="adm-confirmados">0</span><span class="lbl">Confirmados</span></div>
+        <div class="stat pagos"><span class="num" id="adm-pagos">0</span><span class="lbl">Pagos</span></div>
+        <div class="stat pendentes"><span class="num" id="adm-pendentes">0</span><span class="lbl">Pendentes</span></div>
+      </div>
+
+      <div class="card">
+        <h3 class="title">Gerenciar Participantes</h3>
+        <ul class="list" id="lista-admin">
+          <li class="empty">Nenhum participante confirmado ainda.</li>
+        </ul>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<footer>Só a Nata &copy; 2026</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, collection, onSnapshot, addDoc, query, where,
+  getDocs, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ====== CONFIGURAÇÃO DO FIREBASE (substitua pelos dados do seu projeto) ====== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDiu7PnOlrZj6wgrl0oHbQXY1yqaq22uEg",
+  authDomain: "racha-da-nata-45503.firebaseapp.com",
+  databaseURL: "https://racha-da-nata-45503-default-rtdb.firebaseio.com",
+  projectId: "racha-da-nata-45503",
+  storageBucket: "racha-da-nata-45503.firebasestorage.app",
+  messagingSenderId: "382113692219",
+  appId: "1:382113692219:web:28549b5b8402a4cd99fa1e",
+  measurementId: "G-SBNL5SSR73"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const participantesRef = collection(db, "participantes");
+
+/* ====== Senha simples do administrador (apenas trava básica de tela) ====== */
+const SENHA_ADMIN = "admin123";
+
+/* ====== Dados do próximo encontro (agora salvos no Firestore) ====== */
+const eventoDocRef = doc(db, "config", "evento");
+
+onSnapshot(eventoDocRef, (snap) => {
+  if (snap.exists()) {
+    const evento = snap.data();
+    document.getElementById("evt-data").textContent = evento.data || "--/--/----";
+    document.getElementById("evt-hora").textContent = evento.hora || "--:--";
+    document.getElementById("evt-local").textContent = evento.local || "A definir";
+    document.getElementById("evt-valor").textContent = evento.valor || "R$ 0,00";
+
+    // preenche o formulário do admin também, se ele já estiver visível
+    document.getElementById("adm-evt-data").value = evento.data || "";
+    document.getElementById("adm-evt-hora").value = evento.hora || "";
+    document.getElementById("adm-evt-local").value = evento.local || "";
+    document.getElementById("adm-evt-valor").value = evento.valor || "";
+  }
+});
+
+/* ====== Navegação por abas ====== */
+const tabPublico = document.getElementById("tab-publico");
+const tabAdmin = document.getElementById("tab-admin");
+const viewPublico = document.getElementById("view-publico");
+const viewAdmin = document.getElementById("view-admin");
+
+tabPublico.addEventListener("click", () => {
+  tabPublico.classList.add("active");
+  tabAdmin.classList.remove("active");
+  viewPublico.classList.add("active");
+  viewAdmin.classList.remove("active");
+});
+tabAdmin.addEventListener("click", () => {
+  tabAdmin.classList.add("active");
+  tabPublico.classList.remove("active");
+  viewAdmin.classList.add("active");
+  viewPublico.classList.remove("active");
+});
+
+/* ====== Salvar edição do encontro (admin) ====== */
+const formEvento = document.getElementById("form-evento");
+const eventoMsg = document.getElementById("evento-msg");
+
+formEvento.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = document.getElementById("adm-evt-data").value.trim();
+  const hora = document.getElementById("adm-evt-hora").value.trim();
+  const local = document.getElementById("adm-evt-local").value.trim();
+  const valor = document.getElementById("adm-evt-valor").value.trim();
+
+  eventoMsg.className = "form-msg";
+  eventoMsg.textContent = "Salvando...";
+
+  try {
+    await setDoc(eventoDocRef, { data, hora, local, valor });
+    eventoMsg.className = "form-msg success";
+    eventoMsg.textContent = "Encontro atualizado com sucesso!";
+  } catch (err) {
+    console.error(err);
+    eventoMsg.className = "form-msg error";
+    eventoMsg.textContent = "Erro ao salvar. Tente novamente.";
+  }
+});
+
+/* ====== Trava de senha do admin ====== */
+const adminLock = document.getElementById("admin-lock");
+const adminPainel = document.getElementById("admin-painel");
+const btnEntrarAdmin = document.getElementById("btn-entrar-admin");
+const inputSenha = document.getElementById("admin-senha");
+const adminMsg = document.getElementById("admin-msg");
+
+btnEntrarAdmin.addEventListener("click", entrarAdmin);
+inputSenha.addEventListener("keydown", (e) => { if (e.key === "Enter") entrarAdmin(); });
+
+function entrarAdmin() {
+  if (inputSenha.value === SENHA_ADMIN) {
+    adminLock.style.display = "none";
+    adminPainel.style.display = "block";
+  } else {
+    adminMsg.textContent = "Senha incorreta.";
+  }
+}
+
+/* ====== Formulário de confirmação de presença ====== */
+const form = document.getElementById("form-presenca");
+const inputNome = document.getElementById("input-nome");
+const btnConfirmar = document.getElementById("btn-confirmar");
+const formMsg = document.getElementById("form-msg");
+
+function mostrarMsg(texto, tipo) {
+  formMsg.textContent = texto;
+  formMsg.className = "form-msg " + (tipo || "");
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const nome = inputNome.value.trim();
+  if (!nome) { mostrarMsg("Digite um nome válido.", "error"); return; }
+
+  btnConfirmar.disabled = true;
+  mostrarMsg("Confirmando presença...", "");
+
+  try {
+    const nomeLower = nome.toLowerCase();
+    const q = query(participantesRef, where("nomeLower", "==", nomeLower));
+    const existentes = await getDocs(q);
+
+    if (!existentes.empty) {
+      mostrarMsg("Esse nome já confirmou presença.", "error");
+      btnConfirmar.disabled = false;
+      return;
+    }
+
+    await addDoc(participantesRef, {
+      nome,
+      nomeLower,
+      pago: false,
+      criadoEm: serverTimestamp()
+    });
+
+    inputNome.value = "";
+    mostrarMsg("Presença confirmada com sucesso!", "success");
+  } catch (err) {
+    console.error(err);
+    mostrarMsg("Erro ao confirmar presença. Tente novamente.", "error");
+  } finally {
+    btnConfirmar.disabled = false;
+  }
+});
+
+/* ====== Listagem em tempo real (pública + admin) ====== */
+const listaPublico = document.getElementById("lista-participantes");
+const listaAdmin = document.getElementById("lista-admin");
+
+const statConfirmados = document.getElementById("stat-confirmados");
+const statPagos = document.getElementById("stat-pagos");
+const statPendentes = document.getElementById("stat-pendentes");
+
+const admConfirmados = document.getElementById("adm-confirmados");
+const admPagos = document.getElementById("adm-pagos");
+const admPendentes = document.getElementById("adm-pendentes");
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+const qOrdenada = query(participantesRef, orderBy("criadoEm", "asc"));
+
+onSnapshot(qOrdenada, (snapshot) => {
+  const participantes = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+  // --- Lista pública ---
+  if (participantes.length === 0) {
+    listaPublico.innerHTML = '<li class="empty">Nenhum participante confirmado ainda.</li>';
+  } else {
+    listaPublico.innerHTML = participantes.map((p) => `
+      <li class="p-item">
+        <span class="p-name">${escapeHtml(p.nome)}</span>
+        <span class="p-status">${p.pago ? "🟢 Pago" : "🟡 Pendente"}</span>
+      </li>
+    `).join("");
+  }
+
+  // --- Lista admin ---
+  if (participantes.length === 0) {
+    listaAdmin.innerHTML = '<li class="empty">Nenhum participante confirmado ainda.</li>';
+  } else {
+    listaAdmin.innerHTML = participantes.map((p) => `
+      <li class="p-item admin" data-id="${p.id}">
+        <div class="admin-top">
+          <span class="p-name">${escapeHtml(p.nome)}</span>
+          <span class="p-status">${p.pago ? "🟢 Pago" : "🟡 Pendente"}</span>
+        </div>
+        <div class="admin-actions">
+          <button class="btn-pago" data-action="pago" data-id="${p.id}">Marcar Pago</button>
+          <button class="btn-pendente" data-action="pendente" data-id="${p.id}">Marcar Pendente</button>
+          <button class="btn-excluir" data-action="excluir" data-id="${p.id}">Excluir</button>
+        </div>
+      </li>
+    `).join("");
+  }
+
+  // --- Estatísticas ---
+  const total = participantes.length;
+  const pagos = participantes.filter((p) => p.pago).length;
+  const pendentes = total - pagos;
+
+  statConfirmados.textContent = total;
+  statPagos.textContent = pagos;
+  statPendentes.textContent = pendentes;
+
+  admConfirmados.textContent = total;
+  admPagos.textContent = pagos;
+  admPendentes.textContent = pendentes;
+});
+
+/* ====== Ações do admin (pago / pendente / excluir) ====== */
+listaAdmin.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button[data-action]");
+  if (!btn) return;
+
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  const refDoc = doc(db, "participantes", id);
+
+  try {
+    if (action === "pago") {
+      await updateDoc(refDoc, { pago: true });
+    } else if (action === "pendente") {
+      await updateDoc(refDoc, { pago: false });
+    } else if (action === "excluir") {
+      if (confirm("Tem certeza que deseja excluir este participante?")) {
+        await deleteDoc(refDoc);
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Erro ao atualizar participante. Tente novamente.");
+  }
+});
+</script>
+</body>
+</html>
